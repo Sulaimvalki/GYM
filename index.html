@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>FORGE — Gym Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<script>
+    window.addEventListener("load", () => {
+        setTimeout(() => {
+            const splash = document.getElementById("appSplash");
+
+            if (splash) {
+                splash.classList.add("hide");
+
+                setTimeout(() => {
+                    splash.remove();
+                }, 500);
+            }
+        }, 900);
+    });
+</script>
+<body>
+  <div id="appSplash">
+    <div class="splash-logo">
+        <img src="icon-192.png" alt="GYM">
+    </div>
+
+    <h1>GYM</h1>
+    <p>Train • Track • Improve</p>
+
+    <div class="splash-loader">
+        <span></span>
+    </div>
+</div>
+
+<!-- ================= LOADING SCREEN ================= -->
+<div id="loading-screen" class="screen">
+  <div class="loading-wrap">
+    <div class="loading-mark">🔥</div>
+    <div class="loading-name">FORGE</div>
+    <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+  </div>
+</div>
+
+<!-- ================= LOGIN SCREEN ================= -->
+<div id="login-screen" class="screen hidden">
+  <div class="auth-shell">
+    <div class="auth-hero">
+      <div class="auth-mark">🔥</div>
+      <h1 class="auth-title">FORGE</h1>
+      <p class="auth-sub">Two lifters. One log. Show up today.</p>
+    </div>
+
+    <div id="user-select-view" class="auth-view">
+
+  <label class="field-label">Name</label>
+
+  <input
+    type="text"
+    id="login-name"
+    class="text-input"
+    placeholder="Enter your name"
+    autocomplete="name"
+  />
+
+  <label class="field-label">Password</label>
+
+  <input
+    type="password"
+    id="login-password"
+    class="text-input"
+    placeholder="Enter your password"
+    autocomplete="current-password"
+  />
+
+  <p class="field-error hidden" id="login-error">
+    Please enter your name and password.
+  </p>
+
+  <button
+    class="btn btn-primary btn-block"
+    id="login-submit"
+  >
+    Login
+  </button>
+
+</div>
+<!-- ================= SETUP WIZARD ================= -->
+<div id="setup-screen" class="screen hidden">
+  <div class="setup-shell">
+    <div class="setup-progress"><div class="setup-progress-fill" id="setup-progress-fill"></div></div>
+    <div class="setup-steps" id="setup-steps">
+
+      <!-- Step 1: basic info -->
+      <section class="setup-step" data-step="1">
+        <h2 class="setup-title">Tell us about you</h2>
+        <p class="setup-sub">This sets up your personal dashboard.</p>
+        <label class="field-label">Current weight (kg)</label>
+        <input type="number" step="0.1" class="text-input" id="su-weight" placeholder="e.g. 60" />
+        <label class="field-label">Target weight (kg)</label>
+        <input type="number" step="0.1" class="text-input" id="su-target" placeholder="e.g. 70" />
+        <label class="field-label">Height (cm)</label>
+        <input type="number" step="0.1" class="text-input" id="su-height" placeholder="e.g. 175" />
+        <label class="field-label">Age</label>
+        <input type="number" class="text-input" id="su-age" placeholder="e.g. 21" />
+      </section>
+
+      <!-- Step 2: goal -->
+      <section class="setup-step hidden" data-step="2">
+        <h2 class="setup-title">What's your goal?</h2>
+        <p class="setup-sub">You can change this anytime in Settings.</p>
+        <div class="goal-grid" id="su-goal-grid">
+          <button class="goal-option" data-goal="Bulk">
+            <span class="goal-icon">⬆️</span><span>Bulk</span>
+          </button>
+          <button class="goal-option" data-goal="Cut">
+            <span class="goal-icon">⬇️</span><span>Cut</span>
+          </button>
+          <button class="goal-option" data-goal="Maintain">
+            <span class="goal-icon">⚖️</span><span>Maintain</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Step 3: exercises -->
+      <section class="setup-step hidden" data-step="3">
+        <h2 class="setup-title">Build your exercise list</h2>
+        <p class="setup-sub">Add exactly 4 exercises per body part. These are yours — fill in whatever you train.</p>
+        <div id="su-exercise-groups"></div>
+      </section>
+
+      <!-- Step 4: password -->
+      <section class="setup-step hidden" data-step="4">
+        <h2 class="setup-title">Secure your account</h2>
+        <p class="setup-sub">Only you will know this password.</p>
+        <label class="field-label">Password</label>
+        <input type="password" class="text-input" id="su-pw1" placeholder="Create password" />
+        <label class="field-label">Confirm password</label>
+        <input type="password" class="text-input" id="su-pw2" placeholder="Confirm password" />
+        <p class="field-error hidden" id="su-pw-error">Passwords don't match or are too short (min 4 characters).</p>
+      </section>
+
+    </div>
+
+    <div class="setup-nav">
+      <button class="btn btn-ghost" id="setup-prev">Back</button>
+      <button class="btn btn-primary" id="setup-next">Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MAIN APP ================= -->
+<div id="app" class="screen hidden">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-avatar" id="app-avatar">S</div>
+      <div>
+        <div class="topbar-greeting" id="app-greeting">Good to see you</div>
+        <div class="topbar-name" id="app-username">Sulaim</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="open-notifications" title="Notifications">🔔</button>
+      <button class="icon-btn" id="logout-btn" title="Logout">⏻</button>
+    </div>
+  </header>
+
+  <main class="pages">
+
+    <!-- ---------- HOME ---------- -->
+    <section class="page" id="page-home">
+      <div class="salaam-banner" id="salaam-banner">Assalamu Alaikum Warahmatullahi Wabarakatuh</div>
+
+      <div class="stat-grid">
+        <div class="stat-card accent-orange">
+          <div class="stat-label">Current Weight</div>
+          <div class="stat-value" id="home-current-weight">— kg</div>
+        </div>
+        <div class="stat-card accent-teal">
+          <div class="stat-label">Target</div>
+          <div class="stat-value" id="home-target-weight">— kg</div>
+        </div>
+        <div class="stat-card accent-purple">
+          <div class="stat-label">Goal</div>
+          <div class="stat-value" id="home-goal">—</div>
+        </div>
+        <div class="stat-card accent-blue">
+          <div class="stat-label">Today</div>
+          <div class="stat-value small" id="home-today">—</div>
+        </div>
+        <div class="stat-card accent-orange">
+          <div class="stat-label">Weekly Progress</div>
+          <div class="stat-value" id="home-weekly">0 / 6</div>
+        </div>
+        <div class="stat-card accent-teal">
+          <div class="stat-label">Streak</div>
+          <div class="stat-value" id="home-streak">0 days</div>
+        </div>
+        <div class="stat-card accent-purple">
+          <div class="stat-label">Completed Workouts</div>
+          <div class="stat-value" id="home-completed">0</div>
+        </div>
+        <div class="stat-card accent-blue">
+          <div class="stat-label">Total Sets Logged</div>
+          <div class="stat-value" id="home-sets">0</div>
+        </div>
+      </div>
+
+      <h3 class="section-heading">Quick actions</h3>
+      <div class="quick-grid">
+        <button class="quick-btn" id="qa-start-workout"><span class="quick-icon">🏋️</span>Start Workout</button>
+        <button class="quick-btn" id="qa-rest-timer"><span class="quick-icon">⏱️</span>Rest Timer</button>
+        <button class="quick-btn" id="qa-add-weight"><span class="quick-icon">⚖️</span>Log Weight</button>
+        <button class="quick-btn" id="qa-pr"><span class="quick-icon">🏆</span>Personal Records</button>
+        <button class="quick-btn" id="qa-journal"><span class="quick-icon">📓</span>Journal</button>
+        <button class="quick-btn" id="qa-calorie"><span class="quick-icon">🔥</span>Calorie Estimate</button>
+      </div>
+    </section>
+
+    <!-- ---------- WORKOUT ---------- -->
+    <section class="page hidden" id="page-workout">
+      <div class="page-header-row">
+        <h2 class="page-title">Today's Workout</h2>
+        <div class="workout-day-pill" id="workout-day-pill">Monday</div>
+      </div>
+      <div id="workout-restday" class="empty-state hidden">
+        <div class="empty-icon">🌙</div>
+        <div class="empty-title">Rest day</div>
+        <div class="empty-sub">Recovery is part of the program. See you tomorrow.</div>
+      </div>
+
+      <div id="workout-body">
+        <div class="workout-timer-bar" id="workout-timer-bar">
+          <div>
+            <div class="workout-timer-label">Session time</div>
+            <div class="workout-timer-value" id="workout-elapsed">00:00</div>
+          </div>
+          <button class="btn btn-primary" id="workout-start-btn">Start Workout</button>
+        </div>
+
+        <div id="workout-groups"></div>
+
+        <button class="btn btn-primary btn-block hidden" id="workout-finish-btn">Finish Workout</button>
+      </div>
+    </section>
+
+    <!-- ---------- PROGRESS ---------- -->
+    <section class="page hidden" id="page-progress">
+      <h2 class="page-title">Progress</h2>
+      <div class="tab-row" id="progress-tabs">
+        <button class="tab-btn active" data-tab="weekly">Weekly</button>
+        <button class="tab-btn" data-tab="weight">Weight</button>
+        <button class="tab-btn" data-tab="pr">Records</button>
+      </div>
+
+      <div class="tab-panel" id="tab-weekly">
+        <div class="week-grid" id="week-grid"></div>
+        <div class="progress-stat-row">
+          <div class="mini-stat"><div class="mini-stat-value" id="prog-completion">0%</div><div class="mini-stat-label">Completion</div></div>
+          <div class="mini-stat"><div class="mini-stat-value" id="prog-streak">0</div><div class="mini-stat-label">Current Streak</div></div>
+          <div class="mini-stat"><div class="mini-stat-value" id="prog-best-streak">0</div><div class="mini-stat-label">Best Streak</div></div>
+          <div class="mini-stat"><div class="mini-stat-value" id="prog-completed">0</div><div class="mini-stat-label">Completed</div></div>
+          <div class="mini-stat"><div class="mini-stat-value" id="prog-sets">0</div><div class="mini-stat-label">Total Sets</div></div>
+        </div>
+      </div>
+
+      <div class="tab-panel hidden" id="tab-weight">
+        <div class="weight-now-row">
+          <div><div class="mini-stat-label">Current</div><div class="mini-stat-value" id="wt-current">— kg</div></div>
+          <div><div class="mini-stat-label">Target</div><div class="mini-stat-value" id="wt-target">— kg</div></div>
+          <button class="btn btn-primary" id="wt-add-btn">+ Add Entry</button>
+        </div>
+        <div class="chart-card"><svg id="weight-chart" viewBox="0 0 320 140" preserveAspectRatio="none"></svg></div>
+        <div id="weight-history-list" class="entry-list"></div>
+      </div>
+
+<div class="tab-panel hidden" id="tab-pr">
+
+    <!-- Existing PRs -->
+    <div id="pr-list" class="pr-grid"></div>
+
+    <!-- Deadlift PR -->
+    <div class="deadlift-pr-card">
+
+        <div class="deadlift-pr-header">
+            <div>
+                <div class="deadlift-pr-label">🏋️ DEADLIFT</div>
+                <h3>Personal Record</h3>
+            </div>
+
+            <div class="deadlift-pr-badge">PR</div>
+        </div>
+
+        <div class="deadlift-pr-current">
+            <span id="deadlift-pr-value">0</span>
+            <span>KG</span>
+        </div>
+
+        <div id="deadlift-pr-message" class="deadlift-pr-message">
+            No deadlift PR recorded yet.
+        </div>
+
+        <div class="deadlift-pr-form">
+
+            <label class="field-label">Weight (kg)</label>
+            <input
+                type="number"
+                id="deadlift-pr-weight"
+                class="text-input"
+                min="0"
+                step="0.5"
+                placeholder="e.g. 80"
+            >
+
+            <label class="field-label">Reps</label>
+            <input
+                type="number"
+                id="deadlift-pr-reps"
+                class="text-input"
+                min="1"
+                max="50"
+                placeholder="e.g. 5"
+            >
+
+            <button
+                class="btn btn-primary btn-block"
+                id="deadlift-pr-save"
+            >
+                🏆 Save Deadlift PR
+            </button>
+
+        </div>
+
+        <div class="deadlift-history-title">
+            PR History
+        </div>
+
+        <div id="deadlift-pr-history"></div>
+
+    </div>
+
+</div>
+    </section>
+
+    <!-- ---------- HISTORY ---------- -->
+    <section class="page hidden" id="page-history">
+      <h2 class="page-title">History</h2>
+      <div class="tab-row" id="history-tabs">
+        <button class="tab-btn active" data-tab="workouts">Workouts</button>
+        <button class="tab-btn" data-tab="exercises">By Exercise</button>
+      </div>
+      <div class="tab-panel" id="tab-workouts">
+        <div id="workout-history-list" class="entry-list"></div>
+      </div>
+      <div class="tab-panel hidden" id="tab-exercises">
+        <select class="text-input" id="history-exercise-select"></select>
+        <div id="exercise-history-list" class="entry-list"></div>
+      </div>
+    </section>
+
+    <!-- ---------- SETTINGS ---------- -->
+    <section class="page hidden" id="page-settings">
+      <h2 class="page-title">Settings</h2>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Profile</div>
+        <label class="field-label">Name</label>
+        <input class="text-input" id="set-name" />
+        <label class="field-label">Age</label>
+        <input type="number" class="text-input" id="set-age" />
+        <label class="field-label">Height (cm)</label>
+        <input type="number" step="0.1" class="text-input" id="set-height" />
+        <label class="field-label">Current weight (kg)</label>
+        <input type="number" step="0.1" class="text-input" id="set-weight" />
+        <label class="field-label">Target weight (kg)</label>
+        <input type="number" step="0.1" class="text-input" id="set-target" />
+        <label class="field-label">Goal</label>
+        <div class="goal-grid" id="set-goal-grid">
+          <button class="goal-option" data-goal="Bulk"><span class="goal-icon">⬆️</span><span>Bulk</span></button>
+          <button class="goal-option" data-goal="Cut"><span class="goal-icon">⬇️</span><span>Cut</span></button>
+          <button class="goal-option" data-goal="Maintain"><span class="goal-icon">⚖️</span><span>Maintain</span></button>
+        </div>
+        <button class="btn btn-primary btn-block" id="save-profile-btn">Save Profile</button>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">My Exercises</div>
+        <div id="settings-exercise-groups"></div>
+        <button class="btn btn-primary btn-block" id="save-exercises-btn">Save Exercises</button>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Workout Settings</div>
+        <label class="field-label">Sets per exercise</label>
+        <input type="number" class="text-input" id="set-sets" min="1" max="10" />
+        <label class="field-label">Target reps</label>
+        <input type="number" class="text-input" id="set-reps" min="1" max="50" />
+        <label class="field-label">Rest timer (seconds)</label>
+        <input type="number" class="text-input" id="set-rest" min="10" max="600" />
+        <button class="btn btn-primary btn-block" id="save-workout-settings-btn">Save Workout Settings</button>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Security</div>
+        <label class="field-label">New password</label>
+        <input type="password" class="text-input" id="set-newpw" />
+        <label class="field-label">Confirm new password</label>
+        <input type="password" class="text-input" id="set-newpw2" />
+        <p class="field-error hidden" id="set-pw-error">Passwords don't match or are too short.</p>
+        <button class="btn btn-secondary btn-block" id="save-password-btn">Change Password</button>
+        <button class="btn btn-ghost btn-block" id="settings-logout-btn">Logout</button>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Appearance</div>
+        <div class="toggle-row"><span>Dark mode</span><label class="switch"><input type="checkbox" id="set-darkmode" checked><span class="slider"></span></label></div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Notifications</div>
+        <div class="toggle-row"><span>Smart notifications</span><label class="switch"><input type="checkbox" id="set-notif"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span>Streak reminder</span><label class="switch"><input type="checkbox" id="set-streak-reminder"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span>Friends sharing</span><label class="switch"><input type="checkbox" id="set-friends-share"><span class="slider"></span></label></div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Common Gym Schedule</div>
+        <div id="settings-schedule-list" class="schedule-list"></div>
+        <p class="setup-sub">Shared by both accounts. Editing this affects both.</p>
+        <button class="btn btn-secondary btn-block" id="save-schedule-btn">Save Schedule</button>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Data & Backup</div>
+        <button class="btn btn-secondary btn-block" id="export-data-btn">Export My Data</button>
+        <label class="btn btn-secondary btn-block file-btn">Import My Data<input type="file" id="import-data-input" accept=".json" hidden></label>
+        <button class="btn btn-danger btn-block" id="reset-data-btn">Reset My Personal Data</button>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">About</div>
+        <div class="about-row"><span>App</span><span>FORGE Gym Tracker</span></div>
+        <div class="about-row"><span>Version</span><span>1.0.0</span></div>
+        <div class="about-row"><span>Storage</span><span>Local browser only</span></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ---------- BOTTOM NAV ---------- -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-page="home"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></button>
+    <button class="nav-btn" data-page="workout"><span class="nav-icon">🏋️</span><span class="nav-label">Workout</span></button>
+    <button class="nav-btn" data-page="progress"><span class="nav-icon">📈</span><span class="nav-label">Progress</span></button>
+    <button class="nav-btn" data-page="history"><span class="nav-icon">🕓</span><span class="nav-label">History</span></button>
+    <button class="nav-btn" data-page="settings"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
+  </nav>
+</div>
+
+<!-- ================= OVERLAYS ================= -->
+
+<div class="overlay hidden" id="overlay-resttimer">
+  <div class="overlay-header"><button class="back-link" data-close-overlay="overlay-resttimer">‹ Back</button><div class="overlay-title">Rest Timer</div><div style="width:40px"></div></div>
+  <div class="overlay-body center-body">
+    <div class="timer-ring-wrap">
+      <svg viewBox="0 0 200 200" class="timer-ring">
+        <circle cx="100" cy="100" r="88" class="timer-ring-bg"/>
+        <circle cx="100" cy="100" r="88" class="timer-ring-fg" id="timer-ring-fg"/>
+      </svg>
+      <div class="timer-display" id="timer-display">01:30</div>
+    </div>
+    <div class="timer-controls">
+      <button class="btn btn-secondary" id="timer-reset">Reset</button>
+      <button class="btn btn-primary" id="timer-toggle">Start</button>
+      <button class="btn btn-secondary" id="timer-plus15">+15s</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="overlay-journal">
+  <div class="overlay-header"><button class="back-link" data-close-overlay="overlay-journal">‹ Back</button><div class="overlay-title">Journal</div><div style="width:40px"></div></div>
+  <div class="overlay-body">
+    <div class="journal-composer">
+      <textarea id="journal-note" class="text-input textarea" placeholder="How did today go?"></textarea>
+      <label class="btn btn-secondary file-btn">Add Photo<input type="file" id="journal-photo" accept="image/*" hidden></label>
+      <div id="journal-photo-preview"></div>
+      <button class="btn btn-primary btn-block" id="journal-save">Save Entry</button>
+    </div>
+    <div id="journal-list" class="entry-list"></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="overlay-calorie">
+  <div class="overlay-header"><button class="back-link" data-close-overlay="overlay-calorie">‹ Back</button><div class="overlay-title">Calorie Estimate</div><div style="width:40px"></div></div>
+  <div class="overlay-body">
+    <p class="setup-sub">A rough estimate of daily maintenance calories. Not medical advice.</p>
+    <label class="field-label">Weight (kg)</label>
+    <input type="number" class="text-input" id="cal-weight" />
+    <label class="field-label">Height (cm)</label>
+    <input type="number" class="text-input" id="cal-height" />
+    <label class="field-label">Age</label>
+    <input type="number" class="text-input" id="cal-age" />
+    <label class="field-label">Activity level</label>
+    <select class="text-input" id="cal-activity">
+      <option value="1.2">Sedentary (little exercise)</option>
+      <option value="1.375">Light activity</option>
+      <option value="1.55" selected>Moderate activity</option>
+      <option value="1.725">Very active</option>
+    </select>
+    <button class="btn btn-primary btn-block" id="cal-calc-btn">Estimate</button>
+    <div class="cal-result hidden" id="cal-result">
+      <div class="mini-stat-value" id="cal-result-value">—</div>
+      <div class="mini-stat-label">estimated kcal / day (maintenance)</div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="overlay-pr-add">
+  <div class="overlay-header"><button class="back-link" data-close-overlay="overlay-pr-add">‹ Back</button><div class="overlay-title">Log a PR</div><div style="width:40px"></div></div>
+  <div class="overlay-body">
+    <label class="field-label">Exercise</label>
+    <select class="text-input" id="pr-exercise-select"></select>
+    <label class="field-label">Weight (kg)</label>
+    <input type="number" step="0.5" class="text-input" id="pr-weight" />
+    <label class="field-label">Reps</label>
+    <input type="number" class="text-input" id="pr-reps" />
+    <button class="btn btn-primary btn-block" id="pr-save-btn">Save Record</button>
+  </div>
+</div>
+
+<!-- ================= MODAL / TOAST ================= -->
+<div class="modal-backdrop hidden" id="modal-backdrop">
+  <div class="modal-card">
+    <div class="modal-icon" id="modal-icon">✅</div>
+    <div class="modal-title" id="modal-title">Title</div>
+    <div class="modal-body" id="modal-body">Body</div>
+    <div class="modal-actions" id="modal-actions"></div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toast-stack"></div>
+
+<script src="script.js"></script>
+<script>
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("./sw.js")
+                .then(() => {
+                    console.log("Service Worker registered successfully");
+                })
+                .catch(error => {
+                    console.log("Service Worker registration failed:", error);
+                });
+        });
+    }
+</script>
+</body>
+</html>
